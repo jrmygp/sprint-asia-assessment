@@ -4,17 +4,12 @@ import (
 	"time"
 )
 
-type checklist struct {
-	Title  string `json:"title"`
-	Status string `json:"status"`
-}
-
 type Task struct {
 	ID        int         `gorm:"primaryKey" json:"id"`
 	Title     string      `json:"title"`
 	Status    string      `json:"status"`
 	Deadline  string      `json:"deadline"`
-	Checklist []checklist `gorm:"type:json" json:"checklist"`
+	Checklist []Checklist `json:"checklist"`
 	CreatedAt time.Time   `json:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at"`
 }

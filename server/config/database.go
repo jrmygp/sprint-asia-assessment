@@ -15,7 +15,7 @@ func DatabaseConnection() *gorm.DB {
 		panic(err)
 	}
 
-	db.AutoMigrate(&model.Task{})
+	db.AutoMigrate(&model.Task{}, &model.Checklist{})
 
 	return db
 }
