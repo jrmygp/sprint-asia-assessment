@@ -31,6 +31,7 @@ func convertResponse(o model.Task) response.TaskResponse {
 	return response.TaskResponse{
 		ID:        o.ID,
 		Title:     o.Title,
+		Status:    o.Status,
 		Checklist: checklistResponses,
 	}
 }

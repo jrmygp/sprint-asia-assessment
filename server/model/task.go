@@ -12,6 +12,7 @@ type checklist struct {
 type Task struct {
 	ID        int         `gorm:"primaryKey" json:"id"`
 	Title     string      `json:"title"`
+	Status    string      `json:"status"`
 	Checklist []checklist `gorm:"type:json" json:"checklist"`
 	CreatedAt time.Time   `json:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at"`
