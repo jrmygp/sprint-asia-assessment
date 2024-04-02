@@ -35,6 +35,7 @@ func main() {
 	router.GET("/task", taskController.FindAllTask)
 	router.POST("/task", taskController.CreateNewTask)
 	router.GET("/:task_id/checklist", checklistController.FindAllByTask)
+	router.POST("/checklist", checklistController.CreateNewChecklist)
 
 	router.Run(":8888")
 }

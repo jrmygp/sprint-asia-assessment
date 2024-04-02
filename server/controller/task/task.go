@@ -21,22 +21,12 @@ func NewController(service task.Service) *controller {
 }
 
 func convertResponse(o model.Task) response.TaskResponse {
-	var checklistResponses []response.ChecklistResponse
-
-	for _, checklist := range o.Checklist {
-		response := response.ChecklistResponse{
-			Title:  checklist.Title,
-			Status: checklist.Status,
-		}
-		checklistResponses = append(checklistResponses, response)
-	}
 
 	return response.TaskResponse{
-		ID:        o.ID,
-		Title:     o.Title,
-		Status:    o.Status,
-		Deadline:  o.Deadline,
-		Checklist: checklistResponses,
+		ID:       o.ID,
+		Title:    o.Title,
+		Status:   o.Status,
+		Deadline: o.Deadline,
 	}
 }
 

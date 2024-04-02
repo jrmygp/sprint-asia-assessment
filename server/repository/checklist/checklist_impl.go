@@ -21,3 +21,9 @@ func (r *repository) FindAllByTask(TaskID int) ([]model.Checklist, error) {
 
 	return checklists, err
 }
+
+func (r *repository) CreateNew(checklist model.Checklist) (model.Checklist, error) {
+	err := r.db.Create(&checklist).Error
+
+	return checklist, err
+}

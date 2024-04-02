@@ -1,13 +1,16 @@
 package checklist
 
 import (
+	"fmt"
 	"net/http"
 	"server/model"
+	request "server/request/checklist"
 	"server/response"
 	"server/service/checklist"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type controller struct {
@@ -66,6 +69,43 @@ func (c *controller) FindAllByTask(g *gin.Context) {
 		Code:   http.StatusOK,
 		Status: "OK",
 		Data:   checklistResponses,
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
+func (c *controller) CreateNewChecklist(g *gin.Context) {
+	var req request.CreateChecklistRequest
+
+	err := g.ShouldBindJSON(&req)
+	if err != nil {
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors) {
+			errorMessage := fmt.Sprintf("Field %s is %s", e.Field(), e.ActualTag())
+			errorMessages = append(errorMessages, errorMessage)
+		}
+
+		webResponse := response.Response{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Data:   errorMessages,
+		}
+		g.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	checklist, err := c.service.CreateNew(req)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{
+			"errors": err,
+		})
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertChecklistResponse(checklist),
 	}
 
 	g.JSON(http.StatusOK, webResponse)
