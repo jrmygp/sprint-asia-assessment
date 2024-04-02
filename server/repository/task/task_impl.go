@@ -21,3 +21,9 @@ func (r *repository) FindAll() ([]model.Task, error) {
 
 	return tasks, err
 }
+
+func (r *repository) CreateNew(task model.Task) (model.Task, error) {
+	err := r.db.Create(&task).Error
+
+	return task, err
+}

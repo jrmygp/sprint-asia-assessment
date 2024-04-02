@@ -1,12 +1,15 @@
 package task
 
 import (
+	"fmt"
 	"net/http"
 	"server/model"
+	request "server/request/task"
 	"server/response"
 	"server/service/task"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type controller struct {
@@ -72,6 +75,43 @@ func (c *controller) FindAllTask(g *gin.Context) {
 		Code:   http.StatusOK,
 		Status: "OK",
 		Data:   taskResponses,
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
+func (c *controller) CreateNewTask(g *gin.Context) {
+	var req request.CreateTaskRequest
+
+	err := g.ShouldBindJSON(&req)
+	if err != nil {
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors) {
+			errorMessage := fmt.Sprintf("Field %s is %s", e.Field(), e.ActualTag())
+			errorMessages = append(errorMessages, errorMessage)
+		}
+
+		webResponse := response.Response{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Data:   errorMessages,
+		}
+		g.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	task, err := c.service.CreateNew(req)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{
+			"errors": err,
+		})
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertResponse(task),
 	}
 
 	g.JSON(http.StatusOK, webResponse)

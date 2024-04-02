@@ -33,6 +33,7 @@ func main() {
 	router.Use(cors.Default())
 
 	router.GET("/task", taskController.FindAllTask)
+	router.POST("/task", taskController.CreateNewTask)
 	router.GET("/:task_id/checklist", checklistController.FindAllByTask)
 
 	router.Run(":8888")
