@@ -9,7 +9,7 @@ type Task struct {
 	Title     string      `json:"title"`
 	Status    string      `json:"status"`
 	Deadline  string      `json:"deadline"`
-	Checklist []Checklist `json:"checklist"`
+	Checklist []Checklist `gorm:"constraint:OnDelete:CASCADE" json:"checklist"`
 	CreatedAt time.Time   `json:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at"`
 }

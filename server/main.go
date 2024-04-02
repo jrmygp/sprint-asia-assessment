@@ -32,8 +32,13 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.GET("/task", taskController.FindAllTask)
-	router.POST("/task", taskController.CreateNewTask)
+	taskRouter := router.Group("/task")
+
+	taskRouter.GET("", taskController.FindAllTask)
+	taskRouter.GET("/:task_id", taskController.FindTaskByID)
+	taskRouter.POST("", taskController.CreateNewTask)
+	taskRouter.PATCH("/:task_id", taskController.UpdateTask)
+	taskRouter.DELETE("/:task_id", taskController.DeleteTask)
 	router.GET("/:task_id/checklist", checklistController.FindAllByTask)
 	router.POST("/checklist", checklistController.CreateNewChecklist)
 

@@ -7,6 +7,7 @@ import (
 	request "server/request/task"
 	"server/response"
 	"server/service/task"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -70,6 +71,30 @@ func (c *controller) FindAllTask(g *gin.Context) {
 	g.JSON(http.StatusOK, webResponse)
 }
 
+func (c *controller) FindTaskByID(g *gin.Context) {
+	idString := g.Param("task_id")
+	id, _ := strconv.Atoi(idString)
+
+	task, err := c.service.FindByID(id)
+	if err != nil {
+		webResponse := response.Response{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Data:   err,
+		}
+		g.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertResponse(task),
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
 func (c *controller) CreateNewTask(g *gin.Context) {
 	var req request.CreateTaskRequest
 
@@ -95,6 +120,60 @@ func (c *controller) CreateNewTask(g *gin.Context) {
 		g.JSON(http.StatusBadRequest, gin.H{
 			"errors": err,
 		})
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertResponse(task),
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
+func (c *controller) UpdateTask(g *gin.Context) {
+	var req request.UpdateTaskRequest
+
+	err := g.ShouldBindJSON(&req)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	idString := g.Param("task_id")
+	id, _ := strconv.Atoi(idString)
+
+	task, err := c.service.Update(id, req)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{
+			"errors": err,
+		})
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertResponse(task),
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
+func (c *controller) DeleteTask(g *gin.Context) {
+	idString := g.Param("task_id")
+	id, _ := strconv.Atoi(idString)
+
+	task, err := c.service.Delete(id)
+	if err != nil {
+		webResponse := response.Response{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Data:   err,
+		}
+		g.JSON(http.StatusBadRequest, webResponse)
 		return
 	}
 
