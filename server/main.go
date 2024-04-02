@@ -32,7 +32,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 
-	router.GET("", taskController.FindAllTask)
+	router.GET("/task", taskController.FindAllTask)
 	router.GET("/:task_id/checklist", checklistController.FindAllByTask)
 
 	router.Run(":8888")

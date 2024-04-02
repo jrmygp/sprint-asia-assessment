@@ -51,6 +51,17 @@ func (c *controller) FindAllTask(g *gin.Context) {
 
 	var taskResponses []response.TaskResponse
 
+	// Check if tasks is empty, if so, return an empty array
+	if len(tasks) == 0 {
+		webResponse := response.Response{
+			Code:   http.StatusOK,
+			Status: "OK",
+			Data:   []response.TaskResponse{},
+		}
+		g.JSON(http.StatusOK, webResponse)
+		return
+	}
+
 	for _, task := range tasks {
 		response := convertResponse(task)
 
