@@ -2,8 +2,11 @@ package main
 
 import (
 	"server/config"
+	checklistController "server/controller/checklist"
 	taskController "server/controller/task"
+	checklistRepository "server/repository/checklist"
 	taskRepository "server/repository/task"
+	checklistService "server/service/checklist"
 	taskService "server/service/task"
 
 	"github.com/gin-contrib/cors"
@@ -15,18 +18,22 @@ func main() {
 
 	// Repository
 	taskRepository := taskRepository.NewRepository(db)
+	checklistRepository := checklistRepository.NewRepository(db)
 
 	// Service
 	taskService := taskService.NewService(taskRepository)
+	checklistService := checklistService.NewService(checklistRepository)
 
 	// Controller
 	taskController := taskController.NewController(taskService)
+	checklistController := checklistController.NewController(checklistService)
 
 	// Router
 	router := gin.Default()
 	router.Use(cors.Default())
 
 	router.GET("", taskController.FindAllTask)
+	router.GET("/:task_id/checklist", checklistController.FindAllByTask)
 
 	router.Run(":8888")
 }
