@@ -33,14 +33,18 @@ func main() {
 	router.Use(cors.Default())
 
 	taskRouter := router.Group("/task")
-
 	taskRouter.GET("", taskController.FindAllTask)
 	taskRouter.GET("/:task_id", taskController.FindTaskByID)
+	taskRouter.GET("/:task_id/checklist", checklistController.FindAllByTask)
 	taskRouter.POST("", taskController.CreateNewTask)
 	taskRouter.PATCH("/:task_id", taskController.UpdateTask)
 	taskRouter.DELETE("/:task_id", taskController.DeleteTask)
-	router.GET("/:task_id/checklist", checklistController.FindAllByTask)
-	router.POST("/checklist", checklistController.CreateNewChecklist)
+
+	checklistRouter := router.Group("/checklist")
+	checklistRouter.GET("/:checklist_id", checklistController.FindChecklistByID)
+	checklistRouter.POST("", checklistController.CreateNewChecklist)
+	checklistRouter.PATCH("/:checklist_id", checklistController.UpdateChecklist)
+	checklistRouter.DELETE("/:checklist_id", checklistController.DeleteChecklist)
 
 	router.Run(":8888")
 }

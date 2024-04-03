@@ -31,6 +31,10 @@ func convertChecklistResponse(o model.Checklist) response.ChecklistResponse {
 	}
 }
 
+func checklistIsEmpty(task model.Checklist) bool {
+	return task.ID == 0 && task.Title == "" && task.Status == ""
+}
+
 func (c *controller) FindAllByTask(g *gin.Context) {
 	idString := g.Param("task_id")
 	id, _ := strconv.Atoi(idString)
@@ -74,6 +78,40 @@ func (c *controller) FindAllByTask(g *gin.Context) {
 	g.JSON(http.StatusOK, webResponse)
 }
 
+func (c *controller) FindChecklistByID(g *gin.Context) {
+	idString := g.Param("checklist_id")
+	id, _ := strconv.Atoi(idString)
+
+	checklist, err := c.service.FindByID(id)
+	if err != nil {
+		webResponse := response.Response{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Data:   err,
+		}
+		g.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	if checklistIsEmpty(checklist) {
+		webResponse := response.Response{
+			Code:   http.StatusNotFound,
+			Status: "No data found",
+			Data:   nil,
+		}
+		g.JSON(http.StatusNotFound, webResponse)
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertChecklistResponse(checklist),
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
 func (c *controller) CreateNewChecklist(g *gin.Context) {
 	var req request.CreateChecklistRequest
 
@@ -99,6 +137,60 @@ func (c *controller) CreateNewChecklist(g *gin.Context) {
 		g.JSON(http.StatusBadRequest, gin.H{
 			"errors": err,
 		})
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertChecklistResponse(checklist),
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
+func (c *controller) UpdateChecklist(g *gin.Context) {
+	var req request.UpdateChecklistRequest
+
+	err := g.ShouldBindJSON(&req)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	idString := g.Param("checklist_id")
+	id, _ := strconv.Atoi(idString)
+
+	checklist, err := c.service.Update(id, req)
+	if err != nil {
+		g.JSON(http.StatusBadRequest, gin.H{
+			"errors": err,
+		})
+		return
+	}
+
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertChecklistResponse(checklist),
+	}
+
+	g.JSON(http.StatusOK, webResponse)
+}
+
+func (c *controller) DeleteChecklist(g *gin.Context) {
+	idString := g.Param("checklist_id")
+	id, _ := strconv.Atoi(idString)
+
+	checklist, err := c.service.Delete(id)
+	if err != nil {
+		webResponse := response.Response{
+			Code:   http.StatusBadRequest,
+			Status: "ERROR",
+			Data:   err,
+		}
+		g.JSON(http.StatusBadRequest, webResponse)
 		return
 	}
 
