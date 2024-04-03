@@ -9,23 +9,49 @@ import axiosInstance from "./config/api";
 import TaskForm from "./components/TaskForm/TaskForm";
 import { useDisclosure } from "./hooks/useDisclosure";
 import Kanban from "./components/Kanban/Kanban";
+import ChecklistForm from "./components/ChecklistForm/ChecklistForm";
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("On Going");
-  const [taskToEdit, setTaskToEdit] = useState(null);
-  const { isOpen: formIsOpen, toggle } = useDisclosure(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedChecklist, setSelectedChecklist] = useState(null);
+  const { isOpen: taskFormIsOpen, toggle: toggleTaskForm } = useDisclosure(false);
+  const { isOpen: checklistFormIsOpen, toggle: toggleChecklistForm } = useDisclosure(false);
 
-  const handleOpenForm = (status) => {
+  console.log(selectedTask);
+
+  const handleOpenTaskForm = (status) => {
     setSelectedStatus(status);
-    toggle();
+    toggleTaskForm();
   };
 
-  const handleCloseForm = (resetForm) => {
+  const handleCloseTaskForm = (resetForm) => {
     setSelectedStatus("");
     resetForm();
-    toggle();
-    setTaskToEdit(null);
+    toggleTaskForm();
+    setSelectedTask(null);
+  };
+
+  const handleOpenChecklistForm = (task) => {
+    setSelectedTask(task);
+    toggleChecklistForm();
+  };
+
+  const handleCloseChecklistForm = () => {
+    setSelectedTask(null);
+    setSelectedChecklist(null);
+    toggleChecklistForm();
+  };
+
+  const handleOpenEditTaskForm = (task) => {
+    setSelectedTask(task);
+    toggleTaskForm();
+  };
+
+  const handleOpenEditChecklistForm = (checklist) => {
+    setSelectedChecklist(checklist);
+    toggleChecklistForm();
   };
 
   const fetchTasks = async () => {
@@ -39,19 +65,19 @@ function App() {
 
   /**
    * Handles submission of task
-   * @param {*} form
-   * @param {*} setSubmitting
-   * @param {*} setStatus
+   * @param {*} form - form to send to back end
+   * @param {*} setSubmitting - formik state to handle close form
+   * @param {*} setStatus - formik state to handle close form
    */
-  const formSubmission = async (form, setSubmitting, setStatus) => {
+  const taskSubmission = async (form, setSubmitting, setStatus) => {
     try {
-      if (!taskToEdit) {
+      if (!selectedTask) {
         await axiosInstance.post("/task", {
           ...form,
           status: selectedStatus,
         });
       } else {
-        await axiosInstance.patch(`/task/${taskToEdit.id}`, form);
+        await axiosInstance.patch(`/task/${selectedTask.id}`, form);
       }
       setSubmitting(false);
       setStatus("success");
@@ -63,15 +89,24 @@ function App() {
     }
   };
 
-  const handleOpenEditForm = (taskId) => {
-    setTaskToEdit(() => {
-      const filteredTask = tasks.filter((task) => {
-        return task.id == taskId;
-      });
-      return filteredTask[0];
-    });
-
-    toggle();
+  /**
+   *
+   * @param {*} form - form to send to back end
+   * @param {*} resetForm - formik method to reset fields in the form
+   */
+  const checklistSubmission = async (form, resetForm) => {
+    try {
+      if (!selectedChecklist) {
+        await axiosInstance.post("/checklist", { ...form, task_id: selectedTask.id, status: "Open" });
+        resetForm();
+      } else {
+        await axiosInstance.patch(`/checklist/${selectedChecklist.id}`, form);
+        handleCloseChecklistForm();
+      }
+      fetchTasks();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -82,16 +117,25 @@ function App() {
       <Kanban
         tasks={tasks}
         fetchTasks={fetchTasks}
-        handleOpenForm={handleOpenForm}
-        handleOpenEditForm={handleOpenEditForm}
+        handleOpenForm={handleOpenTaskForm}
+        handleOpenEditForm={handleOpenEditTaskForm}
+        handleOpenChecklistForm={handleOpenChecklistForm}
+        handleOpenEditChecklistForm={handleOpenEditChecklistForm}
       />
 
       <TaskForm
-        open={formIsOpen}
+        open={taskFormIsOpen}
         status={selectedStatus}
-        taskToEdit={taskToEdit}
-        onClose={handleCloseForm}
-        onSubmit={formSubmission}
+        taskToEdit={selectedTask}
+        onClose={handleCloseTaskForm}
+        onSubmit={taskSubmission}
+      />
+
+      <ChecklistForm
+        open={checklistFormIsOpen}
+        checklistToEdit={selectedChecklist}
+        onClose={handleCloseChecklistForm}
+        onSubmit={checklistSubmission}
       />
     </ThemeProvider>
   );

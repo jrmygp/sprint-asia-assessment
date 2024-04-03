@@ -3,18 +3,29 @@ import IconButton from "@mui/material/IconButton";
 import { MdDelete, MdEdit, MdOutlineCircle, MdTaskAlt } from "react-icons/md";
 
 import classes from "./ChecklistItem.module.css";
+import axiosInstance from "@/config/api";
 
-const ChecklistItem = ({ checklist }) => {
+const ChecklistItem = ({ id, status, title, fetchTasks, onClickEdit, checklist }) => {
+  const changeChecklistStatus = async () => {
+    try {
+      await axiosInstance.patch(`/checklist/${id}`, {
+        status: status === "Open" ? "Finish" : "Open",
+      });
+      fetchTasks();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
-    <a className={classes["checklist-item"]} key={checklist.id} onClick={() => {}}>
-      <span className={checklist.status === "Finish" ? classes["checked"] : ""}>{checklist.title}</span>
+    <div className={classes["checklist-item"]}>
+      <span className={status === "Finish" ? classes["checked"] : ""}>{title}</span>
 
       <div className={classes["button-wrapper"]}>
-        <IconButton size="small">
-          {checklist.status === "Open" ? <MdOutlineCircle /> : <MdTaskAlt className="text-primary" />}
+        <IconButton size="small" onClick={changeChecklistStatus}>
+          {status === "Open" ? <MdOutlineCircle /> : <MdTaskAlt className="text-primary" />}
         </IconButton>
 
-        <IconButton size="small">
+        <IconButton size="small" onClick={() => onClickEdit(checklist)}>
           <MdEdit />
         </IconButton>
 
@@ -22,7 +33,7 @@ const ChecklistItem = ({ checklist }) => {
           <MdDelete />
         </IconButton>
       </div>
-    </a>
+    </div>
   );
 };
 

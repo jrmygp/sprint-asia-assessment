@@ -5,7 +5,14 @@ import { MdAdd } from "react-icons/md";
 import TaskCard from "@/components/TaskCard/TaskCard";
 import classes from "./Kanban.module.css";
 
-const Kanban = ({ tasks, fetchTasks, handleOpenEditForm, handleOpenForm }) => {
+const Kanban = ({
+  tasks,
+  fetchTasks,
+  handleOpenEditForm,
+  handleOpenForm,
+  handleOpenChecklistForm,
+  handleOpenEditChecklistForm,
+}) => {
   const statuses = ["On Going", "Complete"];
 
   /**
@@ -51,8 +58,11 @@ const Kanban = ({ tasks, fetchTasks, handleOpenEditForm, handleOpenForm }) => {
                       checklists={task.checklists}
                       deadline={task.deadline}
                       status={task.status}
+                      task={task}
                       fetchTasks={fetchTasks}
                       onClickEdit={handleOpenEditForm}
+                      handleOpenChecklistForm={handleOpenChecklistForm}
+                      handleOpenEditChecklistForm={handleOpenEditChecklistForm}
                     />
                   );
                 })}

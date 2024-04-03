@@ -34,7 +34,18 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks, onClickEdit }) => {
+const TaskCard = ({
+  id,
+  deadline,
+  title,
+  checklists,
+  status,
+  task,
+  fetchTasks,
+  onClickEdit,
+  handleOpenChecklistForm,
+  handleOpenEditChecklistForm,
+}) => {
   const { isOpen: dropdownIsClicked, toggle } = useDisclosure();
 
   const finish = checklists?.filter((item) => {
@@ -89,11 +100,11 @@ const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks, onClick
           <div className={classes["checklist-form-button"]}>
             <span>Check list : {checklists?.length || 0}</span>
 
-            <IconButton size="small">
+            <IconButton size="small" onClick={() => handleOpenChecklistForm(task)}>
               <MdAdd />
             </IconButton>
           </div>
-          <span className="text-muted">{(finish?.length / checklists?.length) * 100 || 0}%</span>
+          <span className="text-muted">{Math.round((finish?.length / checklists?.length) * 100) || 0}%</span>
         </a>
 
         <div className={classes["checklist__drop-down"]}>
@@ -110,14 +121,24 @@ const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks, onClick
           <div className={classes["checklist-wrapper"]}>
             {checklists?.length > 0 &&
               checklists.map((checklist, idx) => {
-                return <ChecklistItem key={idx} checklist={checklist} />;
+                return (
+                  <ChecklistItem
+                    key={idx}
+                    id={checklist.id}
+                    status={checklist.status}
+                    title={checklist.title}
+                    checklist={checklist}
+                    fetchTasks={fetchTasks}
+                    onClickEdit={handleOpenEditChecklistForm}
+                  />
+                );
               })}
           </div>
         </Collapse>
       </section>
 
       <section className={classes["button-section"]}>
-        <IconButton size="small" onClick={() => onClickEdit(id)}>
+        <IconButton size="small" onClick={() => onClickEdit(task)}>
           <MdEdit />
         </IconButton>
 

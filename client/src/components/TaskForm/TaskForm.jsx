@@ -28,10 +28,9 @@ const TaskForm = ({ open, onClose, onSubmit, taskToEdit }) => {
   };
 
   const formik = useFormik({
-    enableReinitialize: true,
     initialValues: {
-      title: taskToEdit?.title || "",
-      deadline: moment(taskToEdit?.deadline) || moment(),
+      title: "",
+      deadline: moment(),
     },
     validationSchema: yup.object().shape({
       title: yup.string().required("Task title is required"),
@@ -41,6 +40,17 @@ const TaskForm = ({ open, onClose, onSubmit, taskToEdit }) => {
       onSubmit({ ...values, deadline: moment(values.deadline).format("YYYY/MM/DD") }, setSubmitting, setStatus);
     },
   });
+
+  // Apparently i have to do this because of mui/x-date-pickers/DatePicker newest version(?)
+  useEffect(() => {
+    // Update formik initialValues when taskToEdit has value
+    if (taskToEdit) {
+      formik.setValues({
+        title: taskToEdit?.title,
+        deadline: taskToEdit?.deadline ? moment(taskToEdit.deadline) : moment(),
+      });
+    }
+  }, [taskToEdit]);
 
   useEffect(() => {
     if (!formik.isSubmitting && formik.status === "success") {
@@ -66,7 +76,7 @@ const TaskForm = ({ open, onClose, onSubmit, taskToEdit }) => {
             placeholder="Type your task here..."
             value={formik.values.title}
             name="title"
-            onChange={formik.handleChange}
+            onChange={(e) => formik.setFieldValue("title", e.target.value)}
             error={formik.errors.title}
           />
           <FormLabel>{formik.errors.title}</FormLabel>
