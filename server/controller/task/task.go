@@ -30,6 +30,7 @@ func convertResponse(o model.Task) response.TaskResponse {
 			ID:     checklist.ID,
 			Title:  checklist.Title,
 			Status: checklist.Status,
+			TaskID: checklist.TaskID,
 		}
 		checklistResponses = append(checklistResponses, converted)
 	}
