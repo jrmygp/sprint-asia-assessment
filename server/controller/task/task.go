@@ -31,6 +31,10 @@ func convertResponse(o model.Task) response.TaskResponse {
 	}
 }
 
+func taskIsEmpty(task model.Task) bool {
+	return task.ID == 0 && task.Title == "" && task.Status == "" && task.Deadline == ""
+}
+
 func (c *controller) FindAllTask(g *gin.Context) {
 	tasks, err := c.service.FindAll()
 	if err != nil {
@@ -83,6 +87,16 @@ func (c *controller) FindTaskByID(g *gin.Context) {
 			Data:   err,
 		}
 		g.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	if taskIsEmpty(task) {
+		webResponse := response.Response{
+			Code:   http.StatusNotFound,
+			Status: "No data found",
+			Data:   nil,
+		}
+		g.JSON(http.StatusNotFound, webResponse)
 		return
 	}
 
