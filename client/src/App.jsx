@@ -1,13 +1,13 @@
+import { useEffect, useState } from "react";
+
 // Material UI
 import { ThemeProvider } from "@mui/material";
 import theme from "./theme";
 import Button from "@mui/material/Button";
-
 import { MdAdd } from "react-icons/md";
 
 import "./App.css";
 import axiosInstance from "./config/api";
-import { useEffect, useState } from "react";
 import TaskCard from "./components/TaskCard/TaskCard";
 import TaskForm from "./components/TaskForm/TaskForm";
 import { useDisclosure } from "./hooks/useDisclosure";
@@ -97,9 +97,12 @@ function App() {
                     return (
                       <TaskCard
                         key={task.id}
+                        id={task.id}
                         title={task.title}
                         checklists={task.checklists}
                         deadline={task.deadline}
+                        status={task.status}
+                        fetchTasks={fetchTasks}
                       />
                     );
                   })}

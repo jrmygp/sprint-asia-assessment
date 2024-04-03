@@ -1,6 +1,4 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
-
 import moment from "moment";
 
 import { styled } from "@mui/material/styles";
@@ -14,11 +12,13 @@ import {
   MdOutlineKeyboardArrowUp,
   MdOutlineCircle,
   MdTaskAlt,
+  MdCheckBox,
+  MdCheckBoxOutlineBlank,
 } from "react-icons/md";
 
 import classes from "./TaskCard.module.css";
-import axiosInstance from "@/config/api";
 import { useDisclosure } from "@/hooks/useDisclosure";
+import axiosInstance from "@/config/api";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 6,
@@ -32,17 +32,34 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const TaskCard = ({ deadline, title, checklists }) => {
+const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks }) => {
   const { isOpen: dropdownIsClicked, toggle } = useDisclosure();
 
   const finish = checklists?.filter((item) => {
     return item.status === "Finish";
   });
 
+  const completeTask = async () => {
+    try {
+      await axiosInstance.patch(`/task/${id}`, {
+        status: "Complete",
+      });
+      fetchTasks();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className={classes["item-wrapper"]}>
       <section className={classes["title-and-deadline"]}>
-        <h1 className={classes.title}>{title}</h1>
+        <div className={classes["title-wrapper"]}>
+          <h1 className={classes.title}>{title}</h1>
+
+          <IconButton size="small" disabled={status === "Complete"} onClick={completeTask}>
+            {status === "Complete" ? <MdCheckBox /> : <MdCheckBoxOutlineBlank />}
+          </IconButton>
+        </div>
 
         <div className={classes.deadline}>
           <MdOutlineCalendarToday />
