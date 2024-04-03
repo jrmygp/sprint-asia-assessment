@@ -14,6 +14,9 @@ import {
   MdTaskAlt,
   MdCheckBox,
   MdCheckBoxOutlineBlank,
+  MdAdd,
+  MdDelete,
+  MdEdit,
 } from "react-icons/md";
 
 import classes from "./TaskCard.module.css";
@@ -32,7 +35,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
 }));
 
-const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks }) => {
+const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks, onClickEdit }) => {
   const { isOpen: dropdownIsClicked, toggle } = useDisclosure();
 
   const finish = checklists?.filter((item) => {
@@ -50,6 +53,15 @@ const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks }) => {
     }
   };
 
+  const deleteTask = async () => {
+    try {
+      await axiosInstance.delete(`/task/${id}`);
+      fetchTasks();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className={classes["item-wrapper"]}>
       <section className={classes["title-and-deadline"]}>
@@ -61,50 +73,64 @@ const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks }) => {
           </IconButton>
         </div>
 
-        <div className={classes.deadline}>
-          <MdOutlineCalendarToday />
-          <span>{moment(deadline).format("MMM DD")}</span>
-        </div>
+        {moment(deadline).fromNow().includes("ago") ? (
+          <div className={classes["deadline-passed"]}>
+            <span>Over {moment(deadline).fromNow()}</span>
+          </div>
+        ) : (
+          <div className={classes.deadline}>
+            <MdOutlineCalendarToday />
+            <span>{moment(deadline).format("MMM DD")}</span>
+          </div>
+        )}
       </section>
 
-      {checklists?.length > 0 && (
-        <section className={classes["checklist"]}>
-          <a className={classes["checklist__count"]}>
-            <span>CHECK LIST: {checklists.length}</span>
-            <span className="text-muted">{(finish?.length / checklists.length) * 100}%</span>
-          </a>
+      <section className={classes["checklist"]}>
+        <a className={classes["checklist__count"]}>
+          <div className={classes["checklist-form-button"]}>
+            <span>Check list : {checklists?.length || 0}</span>
 
-          <div className={classes["checklist__drop-down"]}>
-            <BorderLinearProgress variant="determinate" value={(finish?.length / checklists.length) * 100} />
+            <IconButton size="small">
+              <MdAdd />
+            </IconButton>
           </div>
+          <span className="text-muted">{(finish?.length / checklists?.length) * 100 || 0}%</span>
+        </a>
 
-          <div className={classes["button-dropdown"]}>
-            {!dropdownIsClicked ? (
-              <IconButton onClick={toggle}>
-                <MdOutlineKeyboardArrowDown />
-              </IconButton>
-            ) : (
-              <IconButton onClick={toggle}>
-                <MdOutlineKeyboardArrowUp />
-              </IconButton>
-            )}
+        <div className={classes["checklist__drop-down"]}>
+          <BorderLinearProgress variant="determinate" value={(finish?.length / checklists?.length) * 100 || 0} />
+        </div>
+
+        <div className={classes["button-dropdown"]}>
+          <IconButton onClick={toggle}>
+            {!dropdownIsClicked ? <MdOutlineKeyboardArrowDown /> : <MdOutlineKeyboardArrowUp />}
+          </IconButton>
+        </div>
+
+        <Collapse in={dropdownIsClicked}>
+          <div className={classes["checklist-wrapper"]}>
+            {checklists?.length > 0 &&
+              checklists.map((checklist) => {
+                return (
+                  <a className={classes["checklist-item"]} key={checklist.id} onClick={() => {}}>
+                    <span className={checklist.status === "Finish" ? classes["checked"] : ""}>{checklist.title}</span>
+                    {checklist.status === "Open" ? <MdOutlineCircle /> : <MdTaskAlt className="text-primary" />}
+                  </a>
+                );
+              })}
           </div>
+        </Collapse>
+      </section>
 
-          <Collapse in={dropdownIsClicked}>
-            <div className={classes["checklist-wrapper"]}>
-              {checklists.length > 0 &&
-                checklists.map((checklist) => {
-                  return (
-                    <a className={classes["checklist-item"]} key={checklist.id} onClick={() => {}}>
-                      <span className={checklist.status === "Finish" ? classes["checked"] : ""}>{checklist.title}</span>
-                      {checklist.status === "Open" ? <MdOutlineCircle /> : <MdTaskAlt className="text-primary" />}
-                    </a>
-                  );
-                })}
-            </div>
-          </Collapse>
-        </section>
-      )}
+      <section className={classes["button-section"]}>
+        <IconButton size="small" onClick={() => onClickEdit(id)}>
+          <MdEdit />
+        </IconButton>
+
+        <IconButton size="small" color="error" onClick={deleteTask}>
+          <MdDelete />
+        </IconButton>
+      </section>
     </div>
   );
 };

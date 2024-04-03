@@ -15,6 +15,7 @@ import { useDisclosure } from "./hooks/useDisclosure";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("On Going");
+  const [taskToEdit, setTaskToEdit] = useState(null);
   const { isOpen: formIsOpen, toggle } = useDisclosure(false);
 
   const statuses = ["On Going", "Complete"];
@@ -28,6 +29,7 @@ function App() {
     setSelectedStatus("");
     resetForm();
     toggle();
+    setTaskToEdit(null);
   };
 
   const fetchTasks = async () => {
@@ -39,12 +41,22 @@ function App() {
     }
   };
 
+  /**
+   * Handles submission of task
+   * @param {*} form
+   * @param {*} setSubmitting
+   * @param {*} setStatus
+   */
   const formSubmission = async (form, setSubmitting, setStatus) => {
     try {
-      await axiosInstance.post("/task", {
-        ...form,
-        status: selectedStatus,
-      });
+      if (!taskToEdit) {
+        await axiosInstance.post("/task", {
+          ...form,
+          status: selectedStatus,
+        });
+      } else {
+        await axiosInstance.patch(`/task/${taskToEdit.id}`, form);
+      }
       setSubmitting(false);
       setStatus("success");
       fetchTasks();
@@ -64,6 +76,17 @@ function App() {
     return tasks.filter((task) => {
       return task.status === status;
     });
+  };
+
+  const openEditTaskForm = (taskId) => {
+    setTaskToEdit(() => {
+      const filteredTask = tasks.filter((task) => {
+        return task.id == taskId;
+      });
+      return filteredTask[0];
+    });
+
+    toggle();
   };
 
   useEffect(() => {
@@ -103,6 +126,7 @@ function App() {
                         deadline={task.deadline}
                         status={task.status}
                         fetchTasks={fetchTasks}
+                        onClickEdit={openEditTaskForm}
                       />
                     );
                   })}
@@ -126,7 +150,13 @@ function App() {
         })}
       </div>
 
-      <TaskForm open={formIsOpen} status={selectedStatus} onClose={handleCloseForm} onSubmit={formSubmission} />
+      <TaskForm
+        open={formIsOpen}
+        status={selectedStatus}
+        taskToEdit={taskToEdit}
+        onClose={handleCloseForm}
+        onSubmit={formSubmission}
+      />
     </ThemeProvider>
   );
 }

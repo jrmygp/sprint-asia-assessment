@@ -22,6 +22,14 @@
   align-items: center;
   gap: 8px;
 }
+.deadline-passed {
+  padding: 5px 11px;
+  border-radius: 10px;
+  color: "#3F434A";
+  width: fit-content;
+  background-color: #fff5ef;
+  color: #e56e19;
+}
 .title {
   margin: 0;
   font-size: 16px;
@@ -35,6 +43,11 @@
 .checklist__count {
   display: flex;
   justify-content: space-between;
+}
+.checklist-form-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .checklist-wrapper {
   display: flex;
@@ -58,16 +71,9 @@
   display: flex;
   justify-content: center;
 }
-.buttons-and-responsible {
+.button-section {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-.button-wrapper {
-  display: flex;
-  gap: 23px;
-}
-.icon-button {
-  align-items: center;
-  gap: 5px;
+  gap: 4px;
+  justify-content: flex-end;
 }

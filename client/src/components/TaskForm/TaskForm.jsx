@@ -19,7 +19,7 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 import classes from "./TaskForm.module.css";
 
-const TaskForm = ({ open, onClose, onSubmit }) => {
+const TaskForm = ({ open, onClose, onSubmit, taskToEdit }) => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -28,9 +28,10 @@ const TaskForm = ({ open, onClose, onSubmit }) => {
   };
 
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
-      title: "",
-      deadline: moment() || "",
+      title: taskToEdit?.title || "",
+      deadline: moment(taskToEdit?.deadline) || moment(),
     },
     validationSchema: yup.object().shape({
       title: yup.string().required("Task title is required"),
