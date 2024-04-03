@@ -3,22 +3,18 @@ import { useEffect, useState } from "react";
 // Material UI
 import { ThemeProvider } from "@mui/material";
 import theme from "./theme";
-import Button from "@mui/material/Button";
-import { MdAdd } from "react-icons/md";
 
 import "./App.css";
 import axiosInstance from "./config/api";
-import TaskCard from "./components/TaskCard/TaskCard";
 import TaskForm from "./components/TaskForm/TaskForm";
 import { useDisclosure } from "./hooks/useDisclosure";
+import Kanban from "./components/Kanban/Kanban";
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("On Going");
   const [taskToEdit, setTaskToEdit] = useState(null);
   const { isOpen: formIsOpen, toggle } = useDisclosure(false);
-
-  const statuses = ["On Going", "Complete"];
 
   const handleOpenForm = (status) => {
     setSelectedStatus(status);
@@ -67,18 +63,7 @@ function App() {
     }
   };
 
-  /**
-   * Handles filter task by its status (on going or complete)
-   * @param {string} status
-   * @returns {Array} array of filtered task accordingly to desired status
-   */
-  const filterTaskByStatus = (status) => {
-    return tasks.filter((task) => {
-      return task.status === status;
-    });
-  };
-
-  const openEditTaskForm = (taskId) => {
+  const handleOpenEditForm = (taskId) => {
     setTaskToEdit(() => {
       const filteredTask = tasks.filter((task) => {
         return task.id == taskId;
@@ -94,61 +79,12 @@ function App() {
   }, []);
   return (
     <ThemeProvider theme={theme}>
-      <div className="kanban-wrapper">
-        {statuses.map((status, idx) => {
-          return (
-            <div className="wrapper" key={idx}>
-              <div className="kanban-column">
-                <div
-                  className="border-color"
-                  style={{
-                    background: status === "On Going" ? "#FFD240" : "#49C96D",
-                  }}
-                >
-                  &nbsp;
-                </div>
-
-                <section className="column-title">
-                  <div className="column-title__text">
-                    <h2 className="title">{status}</h2>
-                    <div className="item-length">{filterTaskByStatus(status)?.length}</div>
-                  </div>
-                </section>
-
-                <div className="droppable-space">
-                  {filterTaskByStatus(status)?.map((task) => {
-                    return (
-                      <TaskCard
-                        key={task.id}
-                        id={task.id}
-                        title={task.title}
-                        checklists={task.checklists}
-                        deadline={task.deadline}
-                        status={task.status}
-                        fetchTasks={fetchTasks}
-                        onClickEdit={openEditTaskForm}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="button-wrapper">
-                <Button
-                  sx={{
-                    minWidth: "40px",
-                    padding: "10px",
-                    background: "#eaedff",
-                  }}
-                  onClick={() => handleOpenForm(status)}
-                >
-                  <MdAdd fontSize={20} />
-                </Button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <Kanban
+        tasks={tasks}
+        fetchTasks={fetchTasks}
+        handleOpenForm={handleOpenForm}
+        handleOpenEditForm={handleOpenEditForm}
+      />
 
       <TaskForm
         open={formIsOpen}

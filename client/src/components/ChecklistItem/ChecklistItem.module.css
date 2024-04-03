@@ -1,0 +1,18 @@
+.checklist-item {
+  min-height: 40px;
+  background: #f8f8f8;
+  border-radius: 15px;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.button-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.checked {
+  text-decoration: line-through;
+}

@@ -54,19 +54,6 @@
   flex-direction: column;
   gap: 8px;
 }
-.checklist-item {
-  min-height: 40px;
-  background: #f8f8f8;
-  border-radius: 15px;
-  padding: 10px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-.checked {
-  text-decoration: line-through;
-}
 .button-dropdown {
   display: flex;
   justify-content: center;

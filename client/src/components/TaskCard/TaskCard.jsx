@@ -10,8 +10,6 @@ import {
   MdOutlineCalendarToday,
   MdOutlineKeyboardArrowDown,
   MdOutlineKeyboardArrowUp,
-  MdOutlineCircle,
-  MdTaskAlt,
   MdCheckBox,
   MdCheckBoxOutlineBlank,
   MdAdd,
@@ -22,6 +20,7 @@ import {
 import classes from "./TaskCard.module.css";
 import { useDisclosure } from "@/hooks/useDisclosure";
 import axiosInstance from "@/config/api";
+import ChecklistItem from "../ChecklistItem/ChecklistItem";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 6,
@@ -110,13 +109,8 @@ const TaskCard = ({ id, deadline, title, checklists, status, fetchTasks, onClick
         <Collapse in={dropdownIsClicked}>
           <div className={classes["checklist-wrapper"]}>
             {checklists?.length > 0 &&
-              checklists.map((checklist) => {
-                return (
-                  <a className={classes["checklist-item"]} key={checklist.id} onClick={() => {}}>
-                    <span className={checklist.status === "Finish" ? classes["checked"] : ""}>{checklist.title}</span>
-                    {checklist.status === "Open" ? <MdOutlineCircle /> : <MdTaskAlt className="text-primary" />}
-                  </a>
-                );
+              checklists.map((checklist, idx) => {
+                return <ChecklistItem key={idx} checklist={checklist} />;
               })}
           </div>
         </Collapse>
