@@ -17,7 +17,7 @@ func NewRepository(db *gorm.DB) *repository {
 func (r *repository) FindAll() ([]model.Task, error) {
 	var tasks []model.Task
 
-	err := r.db.Find(&tasks).Error
+	err := r.db.Preload("Checklist").Find(&tasks).Error
 
 	return tasks, err
 }
