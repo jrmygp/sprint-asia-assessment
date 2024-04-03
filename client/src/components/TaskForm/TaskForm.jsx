@@ -1,49 +1,97 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/prop-types */
+import { useEffect } from "react";
+
 import { useFormik } from "formik";
 import * as yup from "yup";
+import moment from "moment";
 
-import Card from "@mui/material/Card";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Dialog from "@mui/material/Dialog";
 import TextField from "@mui/material/TextField";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import Button from "@mui/material/Button";
-import CardContent from "@mui/material/CardContent";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 import classes from "./TaskForm.module.css";
 
-const TaskForm = () => {
+const TaskForm = ({ open, onClose, onSubmit }) => {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const onKeyDownDatePicker = (event) => {
+    event?.preventDefault();
+  };
+
   const formik = useFormik({
     initialValues: {
       title: "",
+      deadline: moment() || "",
     },
     validationSchema: yup.object().shape({
       title: yup.string().required("Task title is required"),
+      deadline: yup.string().required("Task deadline is required"),
     }),
-    onSubmit: (values, { resetForm }) => {
-      console.log(values);
-      resetForm();
+    onSubmit: (values, { setSubmitting, setStatus }) => {
+      onSubmit({ ...values, deadline: moment(values.deadline).format("YYYY/MM/DD") }, setSubmitting, setStatus);
     },
   });
-  return (
-    <Card sx={{ minWidth: 275 }}>
-      <CardContent>
-        <form className={classes.form} onSubmit={formik.handleSubmit}>
-          <FormControl fullWidth>
-            <FormLabel sx={{ mb: 1 }}>Task title</FormLabel>
-            <TextField
-              size="small"
-              placeholder="Type your task here..."
-              value={formik.values.title}
-              name="title"
-              onChange={formik.handleChange}
-            />
-          </FormControl>
 
-          <Button variant="contained" type="submit">
-            Lets Work!
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+  useEffect(() => {
+    if (!formik.isSubmitting && formik.status === "success") {
+      onClose(formik.resetForm);
+    }
+  }, [formik.isSubmitting, formik.status]);
+
+  return (
+    <Dialog
+      fullScreen={fullScreen}
+      maxWidth="sm"
+      PaperProps={{
+        style: { width: "100%" },
+      }}
+      open={open}
+      onClose={() => !formik.isSubmitting && formik.status !== "processing" && onClose(formik.resetForm)}
+    >
+      <form className={classes.form} onSubmit={formik.handleSubmit}>
+        <FormControl fullWidth error={formik.errors.title}>
+          <FormLabel sx={{ mb: 1 }}>Task title</FormLabel>
+          <TextField
+            size="small"
+            placeholder="Type your task here..."
+            value={formik.values.title}
+            name="title"
+            onChange={formik.handleChange}
+            error={formik.errors.title}
+          />
+          <FormLabel>{formik.errors.title}</FormLabel>
+        </FormControl>
+
+        <FormControl fullWidth error={formik.errors.deadline}>
+          <FormLabel sx={{ mb: 1 }}>Deadline</FormLabel>
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <DatePicker
+              disablePast
+              value={formik.values.deadline}
+              name="deadline"
+              onChange={(value) => formik.setFieldValue("deadline", moment(value))}
+              slotProps={{
+                textField: { size: "small", onKeyDown: onKeyDownDatePicker, error: formik.errors.deadline },
+              }}
+            />
+          </LocalizationProvider>
+          <FormLabel>{formik.errors.deadline}</FormLabel>
+        </FormControl>
+
+        <Button variant="contained" type="submit">
+          Lets Work!
+        </Button>
+      </form>
+    </Dialog>
   );
 };
 

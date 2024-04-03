@@ -9,10 +9,26 @@ import "./App.css";
 import axiosInstance from "./config/api";
 import { useEffect, useState } from "react";
 import TaskCard from "./components/TaskCard/TaskCard";
+import TaskForm from "./components/TaskForm/TaskForm";
+import { useDisclosure } from "./hooks/useDisclosure";
 
 function App() {
   const [tasks, setTasks] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("On Going");
+  const { isOpen: formIsOpen, toggle } = useDisclosure(false);
+
   const statuses = ["On Going", "Complete"];
+
+  const handleOpenForm = (status) => {
+    setSelectedStatus(status);
+    toggle();
+  };
+
+  const handleCloseForm = (resetForm) => {
+    setSelectedStatus("");
+    resetForm();
+    toggle();
+  };
 
   const fetchTasks = async () => {
     try {
@@ -20,6 +36,22 @@ function App() {
       setTasks(res.data.data);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const formSubmission = async (form, setSubmitting, setStatus) => {
+    try {
+      await axiosInstance.post("/task", {
+        ...form,
+        status: selectedStatus,
+      });
+      setSubmitting(false);
+      setStatus("success");
+      fetchTasks();
+    } catch (error) {
+      console.log(error);
+      setSubmitting(false);
+      setStatus("success");
     }
   };
 
@@ -56,7 +88,7 @@ function App() {
                 <section className="column-title">
                   <div className="column-title__text">
                     <h2 className="title">{status}</h2>
-                    <div className="item-length">0</div>
+                    <div className="item-length">{filterTaskByStatus(status)?.length}</div>
                   </div>
                 </section>
 
@@ -81,7 +113,7 @@ function App() {
                     padding: "10px",
                     background: "#eaedff",
                   }}
-                  // onClick={() => openEditFormHandler(column.status)}
+                  onClick={() => handleOpenForm(status)}
                 >
                   <MdAdd fontSize={20} />
                 </Button>
@@ -90,6 +122,8 @@ function App() {
           );
         })}
       </div>
+
+      <TaskForm open={formIsOpen} status={selectedStatus} onClose={handleCloseForm} onSubmit={formSubmission} />
     </ThemeProvider>
   );
 }

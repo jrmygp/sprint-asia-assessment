@@ -16,8 +16,9 @@ import {
   MdTaskAlt,
 } from "react-icons/md";
 
-import axiosInstance from "@/config/api";
 import classes from "./TaskCard.module.css";
+import axiosInstance from "@/config/api";
+import { useDisclosure } from "@/hooks/useDisclosure";
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   height: 6,
@@ -32,7 +33,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 }));
 
 const TaskCard = ({ deadline, title, checklists }) => {
-  const [dropdownIsClicked, setDropdownIsClicked] = useState(false);
+  const { isOpen: dropdownIsClicked, toggle } = useDisclosure();
 
   const finish = checklists?.filter((item) => {
     return item.status === "Finish";
@@ -62,11 +63,11 @@ const TaskCard = ({ deadline, title, checklists }) => {
 
           <div className={classes["button-dropdown"]}>
             {!dropdownIsClicked ? (
-              <IconButton onClick={() => setDropdownIsClicked(true)}>
+              <IconButton onClick={toggle}>
                 <MdOutlineKeyboardArrowDown />
               </IconButton>
             ) : (
-              <IconButton onClick={() => setDropdownIsClicked(false)}>
+              <IconButton onClick={toggle}>
                 <MdOutlineKeyboardArrowUp />
               </IconButton>
             )}
