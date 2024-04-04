@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import moment from "moment";
+import { useSnackbar } from "notistack";
 
 import { styled } from "@mui/material/styles";
 import IconButton from "@mui/material/IconButton";
@@ -46,6 +47,7 @@ const TaskCard = ({
   handleOpenChecklistForm,
   handleOpenEditChecklistForm,
 }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const { isOpen: dropdownIsClicked, toggle } = useDisclosure();
 
   const finish = checklists?.filter((item) => {
@@ -58,8 +60,10 @@ const TaskCard = ({
         status: "Complete",
       });
       fetchTasks();
+      enqueueSnackbar("Task completed", { variant: "success" });
     } catch (error) {
       console.log(error);
+      enqueueSnackbar("Something went wrong", { variant: "error" });
     }
   };
 
@@ -67,8 +71,10 @@ const TaskCard = ({
     try {
       await axiosInstance.delete(`/task/${id}`);
       fetchTasks();
+      enqueueSnackbar("Task deleted", { variant: "success" });
     } catch (error) {
       console.log(error);
+      enqueueSnackbar("Something went wrong", { variant: "error" });
     }
   };
 
@@ -111,11 +117,13 @@ const TaskCard = ({
           <BorderLinearProgress variant="determinate" value={(finish?.length / checklists?.length) * 100 || 0} />
         </div>
 
-        <div className={classes["button-dropdown"]}>
-          <IconButton onClick={toggle}>
-            {!dropdownIsClicked ? <MdOutlineKeyboardArrowDown /> : <MdOutlineKeyboardArrowUp />}
-          </IconButton>
-        </div>
+        {checklists?.length > 0 && (
+          <div className={classes["button-dropdown"]}>
+            <IconButton onClick={toggle}>
+              {!dropdownIsClicked ? <MdOutlineKeyboardArrowDown /> : <MdOutlineKeyboardArrowUp />}
+            </IconButton>
+          </div>
+        )}
 
         <Collapse in={dropdownIsClicked}>
           <div className={classes["checklist-wrapper"]}>

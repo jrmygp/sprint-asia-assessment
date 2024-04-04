@@ -6,8 +6,6 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import moment from "moment";
 
-import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import Dialog from "@mui/material/Dialog";
 import TextField from "@mui/material/TextField";
 import FormControl from "@mui/material/FormControl";
@@ -20,37 +18,20 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import classes from "./TaskForm.module.css";
 
 const TaskForm = ({ open, onClose, onSubmit, taskToEdit }) => {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const onKeyDownDatePicker = (event) => {
-    event?.preventDefault();
-  };
-
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
-      title: "",
-      deadline: moment(),
+      title: taskToEdit?.title || "",
+      deadline: taskToEdit?.deadline || moment().format("YYYY/MM/DD"),
     },
     validationSchema: yup.object().shape({
       title: yup.string().required("Task title is required"),
       deadline: yup.string().required("Task deadline is required"),
     }),
     onSubmit: (values, { setSubmitting, setStatus }) => {
-      onSubmit({ ...values, deadline: moment(values.deadline).format("YYYY/MM/DD") }, setSubmitting, setStatus);
+      onSubmit(values, setSubmitting, setStatus);
     },
   });
-
-  // Apparently i have to do this because of mui/x-date-pickers/DatePicker newest version(?)
-  useEffect(() => {
-    // Update formik initialValues when taskToEdit has value
-    if (taskToEdit) {
-      formik.setValues({
-        title: taskToEdit?.title,
-        deadline: taskToEdit?.deadline ? moment(taskToEdit.deadline) : moment(),
-      });
-    }
-  }, [taskToEdit]);
 
   useEffect(() => {
     if (!formik.isSubmitting && formik.status === "success") {
@@ -60,11 +41,8 @@ const TaskForm = ({ open, onClose, onSubmit, taskToEdit }) => {
 
   return (
     <Dialog
-      fullScreen={fullScreen}
+      fullWidth
       maxWidth="sm"
-      PaperProps={{
-        style: { width: "100%" },
-      }}
       open={open}
       onClose={() => !formik.isSubmitting && formik.status !== "processing" && onClose(formik.resetForm)}
     >
@@ -86,13 +64,11 @@ const TaskForm = ({ open, onClose, onSubmit, taskToEdit }) => {
           <FormLabel sx={{ mb: 1 }}>Deadline</FormLabel>
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
-              disablePast
-              value={formik.values.deadline}
               name="deadline"
-              onChange={(value) => formik.setFieldValue("deadline", moment(value))}
-              slotProps={{
-                textField: { size: "small", onKeyDown: onKeyDownDatePicker, error: formik.errors.deadline },
-              }}
+              disablePast
+              renderInput={(params) => <TextField {...params} size="small" onKeyDown={(e) => e.preventDefault()} />}
+              value={formik.values.deadline}
+              onChange={(value) => formik.setFieldValue("deadline", moment(value).format("YYYY/MM/DD"))}
             />
           </LocalizationProvider>
           <FormLabel>{formik.errors.deadline}</FormLabel>

@@ -11,6 +11,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 .title-wrapper {
   display: flex;
@@ -43,6 +44,8 @@
 .checklist__count {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .checklist-form-button {
   display: flex;

@@ -1,15 +1,6 @@
-.kanban-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  max-height: 100vh;
-  position: relative;
-  transition: 0.5s;
-}
 .wrapper {
   display: flex;
   flex-direction: column;
-  min-width: 350px;
   height: fit-content;
   max-height: 80vh;
   flex: 1;

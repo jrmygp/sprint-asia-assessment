@@ -1,90 +1,143 @@
 /* eslint-disable react/prop-types */
-import Button from "@mui/material/Button";
-import { MdAdd } from "react-icons/md";
+import { useState } from "react";
 
-import TaskCard from "@/components/TaskCard/TaskCard";
-import classes from "./Kanban.module.css";
+import { useSnackbar } from "notistack";
 
-const Kanban = ({
-  tasks,
-  fetchTasks,
-  handleOpenEditForm,
-  handleOpenForm,
-  handleOpenChecklistForm,
-  handleOpenEditChecklistForm,
-}) => {
+import Grid from "@mui/material/Grid";
+
+import TaskForm from "../TaskForm/TaskForm";
+import ChecklistForm from "../ChecklistForm/ChecklistForm";
+import KanbanItem from "../KanbanItem/KanbanItem";
+import axiosInstance from "@/config/api";
+import { useDisclosure } from "@/hooks/useDisclosure";
+
+const Kanban = ({ tasks, fetchTasks }) => {
+  const { enqueueSnackbar } = useSnackbar();
+  const [selectedStatus, setSelectedStatus] = useState("On Going");
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedChecklist, setSelectedChecklist] = useState(null);
+  const { isOpen: taskFormIsOpen, toggle: toggleTaskForm } = useDisclosure(false);
+  const { isOpen: checklistFormIsOpen, toggle: toggleChecklistForm } = useDisclosure(false);
+
   const statuses = ["On Going", "Complete"];
 
+  const handleOpenTaskForm = (status) => {
+    setSelectedStatus(status);
+    toggleTaskForm();
+  };
+
+  const handleCloseTaskForm = (resetForm) => {
+    setSelectedStatus("");
+    resetForm();
+    toggleTaskForm();
+    setSelectedTask(null);
+  };
+
+  const handleOpenChecklistForm = (task) => {
+    setSelectedTask(task);
+    toggleChecklistForm();
+  };
+
+  const handleCloseChecklistForm = () => {
+    setSelectedTask(null);
+    setSelectedChecklist(null);
+    toggleChecklistForm();
+  };
+
+  const handleOpenEditTaskForm = (task) => {
+    setSelectedTask(task);
+    toggleTaskForm();
+  };
+
+  const handleOpenEditChecklistForm = (checklist) => {
+    setSelectedChecklist(checklist);
+    toggleChecklistForm();
+  };
+
   /**
-   * Handles filter task by its status (on going or complete)
-   * @param {string} status
-   * @returns {Array} array of filtered task accordingly to desired status
+   * Handles submission of task
+   * @param {*} form - form to send to back end
+   * @param {*} setSubmitting - formik state to handle close form
+   * @param {*} setStatus - formik state to handle close form
    */
-  const filterTaskByStatus = (status) => {
-    return tasks.filter((task) => {
-      return task.status === status;
-    });
+  const taskSubmission = async (form, setSubmitting, setStatus) => {
+    try {
+      if (!selectedTask) {
+        await axiosInstance.post("/task", {
+          ...form,
+          status: selectedStatus,
+        });
+      } else {
+        await axiosInstance.patch(`/task/${selectedTask.id}`, form);
+      }
+      setSubmitting(false);
+      setStatus("success");
+      fetchTasks();
+      enqueueSnackbar("Task saved", { variant: "success" });
+    } catch (error) {
+      console.log(error);
+      setSubmitting(false);
+      setStatus("success");
+      enqueueSnackbar("Something went wrong", { variant: "error" });
+    }
+  };
+
+  /**
+   * Handles submission of checklist
+   * @param {*} form - form to send to back end
+   * @param {*} resetForm - formik method to reset fields in the form
+   */
+  const checklistSubmission = async (form, resetForm) => {
+    try {
+      if (!selectedChecklist) {
+        await axiosInstance.post("/checklist", { ...form, task_id: selectedTask.id, status: "Open" });
+        resetForm();
+      } else {
+        await axiosInstance.patch(`/checklist/${selectedChecklist.id}`, form);
+        handleCloseChecklistForm();
+      }
+      fetchTasks();
+      enqueueSnackbar("Checlist saved", { variant: "success" });
+    } catch (error) {
+      console.log(error);
+      enqueueSnackbar("Something went wrong", { variant: "error" });
+    }
   };
 
   return (
-    <div className={classes["kanban-wrapper"]}>
-      {statuses.map((status, idx) => {
-        return (
-          <div className={classes.wrapper} key={idx}>
-            <div className={classes["kanban-column"]}>
-              <div
-                className={classes["border-color"]}
-                style={{
-                  background: status === "On Going" ? "#FFD240" : "#49C96D",
-                }}
-              >
-                &nbsp;
-              </div>
+    <>
+      <Grid container spacing={2}>
+        {statuses.map((status, idx) => {
+          return (
+            <KanbanItem
+              key={idx}
+              status={status}
+              tasks={tasks}
+              fetchTasks={fetchTasks}
+              handleOpenChecklistForm={handleOpenChecklistForm}
+              handleOpenEditChecklistForm={handleOpenEditChecklistForm}
+              handleOpenEditTaskForm={handleOpenEditTaskForm}
+              handleOpenTaskForm={handleOpenTaskForm}
+            />
+          );
+        })}
+      </Grid>
 
-              <section className={classes["column-title"]}>
-                <div className={classes["column-title__text"]}>
-                  <h2 className={classes.title}>{status}</h2>
-                  <div className={classes["item-length"]}>{filterTaskByStatus(status)?.length}</div>
-                </div>
-              </section>
+      <TaskForm
+        open={taskFormIsOpen}
+        status={selectedStatus}
+        taskToEdit={selectedTask}
+        onClose={handleCloseTaskForm}
+        onSubmit={taskSubmission}
+      />
 
-              <div className={classes["droppable-space"]}>
-                {filterTaskByStatus(status)?.map((task) => {
-                  return (
-                    <TaskCard
-                      key={task.id}
-                      id={task.id}
-                      title={task.title}
-                      checklists={task.checklists}
-                      deadline={task.deadline}
-                      status={task.status}
-                      task={task}
-                      fetchTasks={fetchTasks}
-                      onClickEdit={handleOpenEditForm}
-                      handleOpenChecklistForm={handleOpenChecklistForm}
-                      handleOpenEditChecklistForm={handleOpenEditChecklistForm}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className={classes["button-wrapper"]}>
-              <Button
-                sx={{
-                  minWidth: "40px",
-                  padding: "10px",
-                  background: "#eaedff",
-                }}
-                onClick={() => handleOpenForm(status)}
-              >
-                <MdAdd fontSize={20} />
-              </Button>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+      <ChecklistForm
+        open={checklistFormIsOpen}
+        checklistToEdit={selectedChecklist}
+        onClose={handleCloseChecklistForm}
+        onSubmit={checklistSubmission}
+      />
+    </>
   );
 };
 
